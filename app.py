@@ -127,18 +127,45 @@ def append_to_github_csv(new_response):
 
 # === Form ===
 with st.form("skills_form"):
+    # === Mandatory fields ===
     first_name = st.text_input("First Name", placeholder="Enter your first name")
     last_name = st.text_input("Last Name", placeholder="Enter your last name")
 
-    prog_text = st.text_area("Describe your experience with programming.")
-    data_text = st.text_area("Explain how you typically analyze a dataset.")
-    ml_text = st.text_area("Tell us about a project where you applied machine learning.")
-    ml_problem_text = st.text_area("How would you approach designing a churn model?")
-    nlp_text = st.text_area("Have you ever worked with NLP?")
-    pipeline_text = st.text_area("Explain a time when you built or maintained a data pipeline.")
-    sharing_text = st.text_area("How do you usually share the results of your analysis?")
-    reflection_text = st.text_area("What makes someone a strong Data Scientist / Engineer?")
+    # === Optional fields with suggestions ===
+    prog_text = st.text_area(
+        "Describe your experience with programming.",
+        placeholder="Ex: I mostly use Python and SQL, and I work with Git and OOP concepts."
+    )
+    data_text = st.text_area(
+        "Explain how you typically analyze a dataset.",
+        placeholder="Ex: I clean the data, perform EDA, visualize distributions, and calculate statistics."
+    )
+    ml_text = st.text_area(
+        "Tell us about a project where you applied machine learning.",
+        placeholder="Ex: I built a regression model using scikit-learn and evaluated it with cross-validation."
+    )
+    ml_problem_text = st.text_area(
+        "How would you approach designing a churn prediction model?",
+        placeholder="Ex: I would perform feature engineering, select a model, train, and evaluate it."
+    )
+    nlp_text = st.text_area(
+        "Have you ever worked with NLP?",
+        placeholder="Ex: I tokenized text, used embeddings, transformers, sentiment analysis, and NER."
+    )
+    pipeline_text = st.text_area(
+        "Explain a time when you built or maintained a data pipeline.",
+        placeholder="Ex: I implemented an ETL pipeline using Airflow for batch processing."
+    )
+    sharing_text = st.text_area(
+        "How do you usually share the results of your analysis?",
+        placeholder="Ex: I create dashboards, visualizations, and prepare presentations to explain insights."
+    )
+    reflection_text = st.text_area(
+        "What makes someone a strong Data Scientist / Engineer?",
+        placeholder="Ex: Strong problem-solving, communication skills, and mastery of tools."
+    )
 
+    # === Sliders ===
     col1, col2 = st.columns(2)
     with col1:
         git_level = st.slider("Git & Collaboration", 1, 5, 3)
@@ -148,7 +175,7 @@ with st.form("skills_form"):
     submitted = st.form_submit_button("Submit")
 
     if submitted:
-        # ✅ Only First and Last Name are mandatory
+        # ✅ Only first and last name are mandatory
         if not first_name.strip() or not last_name.strip():
             st.warning("⚠️ Please fill in your First Name and Last Name before submitting.")
         else:
