@@ -1,6 +1,6 @@
 import pandas as pd
 from pathlib import Path
-data _dir = Path("data")
+data_dir = Path("data")
 cat > code/clean.py << 'EOF'
 import pandas import pandas
 
