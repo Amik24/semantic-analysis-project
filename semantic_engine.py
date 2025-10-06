@@ -56,6 +56,24 @@ OUT_DIR = Path("outputs")
 FIG_DIR = OUT_DIR / "figures"   # reserved if you add charts later
 RES_DIR = OUT_DIR / "results"
 
+# -------------------------------------------------------------------------
+# Extra support for front-end CSV exports with multiple columns
+# -------------------------------------------------------------------------
+FRONT_TEXT_COLS = [
+    "Programming", "Data_Analysis", "ML_Projects", "ML_Problem",
+    "NLP", "Data_Pipeline", "Sharing_Results", "Reflection"
+]
+
+def _row_to_response(row) -> str:
+    """Concatenate the textual fields from the front form into one response line."""
+    parts = []
+    for col in FRONT_TEXT_COLS:
+        if col in row and pd.notna(row[col]):
+            txt = str(row[col]).strip()
+            if txt and txt.lower() != "none":
+                parts.append(txt)
+    return " ".join(parts).strip()
+
 
 # ------------------------------ Helper functions ------------------------------
 
@@ -68,55 +86,56 @@ def _ensure_folders() -> None:
 
 def load_inputs() -> Tuple[pd.DataFrame, pd.DataFrame, List[str]]:
     """
-    Load the three inputs needed by the engine:
-      - competencies.csv: list of competencies with IDs, text, and block names
-      - job_skills.csv : mapping job -> list of competency IDs (long format)
-      - user_responses.csv: user's free-text answers (column "response")
-
-    Returns:
-      (competencies_df, jobs_df_grouped, user_inputs_list)
-
-    Raises:
-      FileNotFoundError if required files are missing.
-      ValueError if user_responses.csv lacks a "response" column.
+    Load inputs. Prefer classic user_responses.csv if present; otherwise accept
+    a front-end export named data/front_export.csv with multiple columns.
     """
     comp_path = DATA_DIR / "competencies.csv"
     jobs_path = DATA_DIR / "job_skills.csv"
-    user_path = DATA_DIR / "user_responses.csv"
+    user_path = DATA_DIR / "user_responses.csv"   # classic single-column input
+    front_path = DATA_DIR / "front_export.csv"    # put your front CSV here
 
     if not comp_path.exists():
         raise FileNotFoundError("Missing data/competencies.csv")
     if not jobs_path.exists():
         raise FileNotFoundError("Missing data/job_skills.csv")
-    if not user_path.exists():
-        raise FileNotFoundError(
-            "Missing data/user_responses.csv (must contain a 'response' column)."
-        )
 
+    # Load reference data
     competencies = pd.read_csv(comp_path)
     jobs_long = pd.read_csv(jobs_path)
-    user_df = pd.read_csv(user_path)
-
-    # Normalize headers
     competencies.columns = competencies.columns.str.strip()
     jobs_long.columns = jobs_long.columns.str.strip()
-    user_df.columns = user_df.columns.str.strip()
 
-    if "response" not in user_df.columns:
-        raise ValueError("CSV must contain a 'response' column.")
+    # 1) Classic path: data/user_responses.csv with a 'response' column
+    if user_path.exists():
+        user_df = pd.read_csv(user_path)
+        user_df.columns = user_df.columns.str.strip()
+        if "response" not in user_df.columns:
+            raise ValueError("data/user_responses.csv must contain a 'response' column.")
+        user_inputs = (
+            user_df["response"]
+            .dropna().astype(str).map(str.strip)
+            .replace("", np.nan).dropna().tolist()
+        )
 
-    # Keep non-empty text answers only
-    user_inputs = (
-        user_df["response"]
-        .dropna()
-        .astype(str)
-        .map(str.strip)
-        .replace("", np.nan)
-        .dropna()
-        .tolist()
-    )
+    # 2) Front-end export path: data/front_export.csv (multi-column)
+    elif front_path.exists():
+        df = pd.read_csv(front_path)
+        df.columns = df.columns.str.strip()
+        user_inputs = df.apply(_row_to_response, axis=1).tolist()
+        user_inputs = [x for x in user_inputs if x]  # keep non-empty
 
-    # Group the long job table to get one row per job with a list of required competency IDs
+        if not user_inputs:
+            raise ValueError(
+                "data/front_export.csv loaded but produced no non-empty responses. "
+                "Check FRONT_TEXT_COLS or your CSV content."
+            )
+    else:
+        raise FileNotFoundError(
+            "Provide either data/user_responses.csv (with 'response' column) "
+            "or data/front_export.csv (front export with multiple columns)."
+        )
+
+    # Group job -> list of required competencies
     jobs = (
         jobs_long
         .groupby(["JobID", "JobTitle"])["CompetencyID"]
@@ -126,6 +145,7 @@ def load_inputs() -> Tuple[pd.DataFrame, pd.DataFrame, List[str]]:
     )
 
     return competencies, jobs, user_inputs
+
 
 
 def encode(model: SentenceTransformer, texts: List[str]):
@@ -192,12 +212,13 @@ def main() -> None:
     print("Loading data...")
     competencies, jobs, user_inputs = load_inputs()
     if not user_inputs:
-        raise ValueError("No user responses found in data/user_responses.csv.")
+        raise ValueError("No user responses found (user_responses.csv or front_export.csv).")
 
     # Prepare reference data
     cid2block = dict(zip(competencies["CompetencyID"], competencies["BlockName"]))
     comp_ids = competencies["CompetencyID"].tolist()
     comp_texts = competencies["CompetencyText"].astype(str).tolist()
+
 
     print(f"Loading model: {MODEL_NAME}")
     model = SentenceTransformer(MODEL_NAME)
