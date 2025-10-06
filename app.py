@@ -166,7 +166,7 @@ with st.form("skills_form"):
     )
 
     # === Sliders ===
-    col1, col2 = st.columns(2)
+col1, col2 = st.columns(2)
 with col1:
     git_level = st.slider(
         "Git & Collaboration",
@@ -211,4 +211,5 @@ with col2:
                 st.dataframe(df)
             else:
                 st.error("❌ Failed to save responses to GitHub. Please try again or contact support.")
+
 
