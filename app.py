@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# === Custom CSS for modern font, colors, and sliders ===
+# === Custom CSS for modern font, colors, slider ===
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
@@ -47,7 +47,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# === Header (without logo) ===
+# === Header (no logo) ===
 st.markdown("""
 <div>
     <div class="header-title">Project – Semantic Analysis</div>
@@ -57,13 +57,13 @@ st.markdown("""
 
 st.markdown("---")
 
-# === Form Section ===
+# === Form ===
 with st.form("skills_form"):
     # === Basic Info ===
     first_name = st.text_input("First Name", placeholder="Enter your first name")
     last_name = st.text_input("Last Name", placeholder="Enter your last name")
 
-    # === Experience Questions ===
+    # === Questions ===
     prog_text = st.text_area(
         "Describe your experience with programming. What languages or tools have you used most?",
         placeholder="Ex: I mostly use Python and SQL, and I work with Git and OOP concepts."
@@ -114,13 +114,12 @@ with st.form("skills_form"):
             help="1 = Beginner / Weak, 5 = Expert / Strong"
         )
 
-    # === Reflection ===
     reflection_text = st.text_area(
         "In your opinion, what makes someone a strong Data Scientist / Engineer?",
         placeholder="Ex: Strong problem-solving, communication skills, and mastery of tools."
     )
 
-    # === Submit Button ===
+    # === Submit ===
     submitted = st.form_submit_button("Submit")
 
     if submitted:
@@ -143,6 +142,7 @@ with st.form("skills_form"):
         if empty_fields:
             st.warning(f"⚠️ Please fill in all the required fields before submitting: {', '.join(empty_fields)}")
         else:
+            # Créer le DataFrame avec les réponses
             responses = {
                 "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "First_Name": first_name,
@@ -159,14 +159,11 @@ with st.form("skills_form"):
                 "Reflection": reflection_text
             }
 
-            # === Save to CSV ===
             df = pd.DataFrame([responses])
-            try:
-                existing_df = pd.read_csv("responses.csv")
-                df = pd.concat([existing_df, df], ignore_index=True)
-            except FileNotFoundError:
-                pass
 
-            df.to_csv("responses.csv", index=False)
-            st.success("✅ Your responses have been successfully saved!")
+            st.success(f"✅ Thank you {first_name}! Your responses have been submitted successfully.")
             st.balloons()
+
+            # === Display the responses ===
+            st.markdown("### 📋 Your Submitted Responses:")
+            st.dataframe(df)
