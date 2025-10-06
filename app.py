@@ -165,20 +165,24 @@ with st.form("skills_form"):
         placeholder="Ex: Strong problem-solving, communication skills, and mastery of tools."
     )
 
-    # === Sliders ===
-col1, col2 = st.columns(2)
-with col1:
-    git_level = st.slider(
-        "Git & Collaboration",
-        min_value=1, max_value=5, value=3,
-        help="1 = Beginner / Weak, 5 = Expert / Strong"
-    )
-with col2:
-    presentation_level = st.slider(
-        "Presentation Skills",
-        min_value=1, max_value=5, value=3,
-        help="1 = Beginner / Weak, 5 = Expert / Strong"
-    )
+    # === Sliders with tooltip ===
+    col1, col2 = st.columns(2)
+    with col1:
+        git_level = st.slider(
+            "Git & Collaboration",
+            min_value=1, max_value=5, value=3,
+            help="1 = Beginner / Weak, 5 = Expert / Strong"
+        )
+    with col2:
+        presentation_level = st.slider(
+            "Presentation Skills",
+            min_value=1, max_value=5, value=3,
+            help="1 = Beginner / Weak, 5 = Expert / Strong"
+        )
+
+    # === Submit button ===
+    submitted = st.form_submit_button("Submit")
+
     if submitted:
         # ✅ Only first and last name are mandatory
         if not first_name.strip() or not last_name.strip():
@@ -211,5 +215,3 @@ with col2:
                 st.dataframe(df)
             else:
                 st.error("❌ Failed to save responses to GitHub. Please try again or contact support.")
-
-
