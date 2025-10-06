@@ -1,129 +1,172 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from pathlib import Path
 
-# --- Page configuration ---
+# === Page configuration ===
 st.set_page_config(
     page_title="Semantic Analysis Project",
     page_icon="🧠",
     layout="wide"
 )
 
-# --- Custom CSS ---
+# === Custom CSS for modern font, colors, and sliders ===
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-        html, body, [class*="css"]  { font-family: 'Roboto', sans-serif; }
-        .stTextArea, .stSlider, .stTextInput { font-size: 16px; }
-        .stButton>button { background-color: #017179; color: white; }
-        div[data-baseweb="slider"] > div > div > div > div > div[role="slider"] + div { display: none; }
+
+        html, body, [class*="css"]  {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .header-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #017179;
+        }
+
+        .header-subtitle {
+            font-size: 18px;
+            color: #017179;
+            margin-bottom: 20px;
+        }
+
+        .stTextArea, .stSlider, .stTextInput {
+            font-size: 16px;
+        }
+
+        .stButton>button {
+            background-color: #017179;
+            color: white;
+            border-radius: 8px;
+        }
+
+        /* Remove slider label above (tooltip only remains) */
+        div[data-baseweb="slider"] > div > div > div > div > div[role="slider"] + div {
+            display: none;
+        }
     </style>
 """, unsafe_allow_html=True)
 
-# --- Header ---
-logo_path = Path(r"C:\Users\bouai\MonProjetNLP\ECE_LOGO_2021_web.png")
-col1, col2 = st.columns([4,1])
-with col1:
-    st.markdown("<div style='font-size:32px; font-weight:700; color:#017179;'>Project – Semantic Analysis</div>", unsafe_allow_html=True)
-    st.markdown("<div style='font-size:18px; color:#017179; margin-bottom:20px;'>Semantic Analysis for Competency Mapping and Job Profile Recommendation</div>", unsafe_allow_html=True)
-with col2:
-    st.image(logo_path, width=120)
+# === Header (without logo) ===
+st.markdown("""
+<div>
+    <div class="header-title">Project – Semantic Analysis</div>
+    <div class="header-subtitle">Semantic Analysis for Competency Mapping and Job Profile Recommendation</div>
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("---")
 
-# --- Initialize session_state for form fields if not exist ---
-fields = [
-    "first_name", "last_name", "prog_text", "data_text", "ml_text",
-    "ml_problem_text", "nlp_text", "pipeline_text", "sharing_text",
-    "reflection_text", "git_level", "presentation_level"
-]
-for field in fields:
-    if field not in st.session_state:
-        if "level" in field:
-            st.session_state[field] = 3
-        else:
-            st.session_state[field] = ""
-
-# --- Form ---
+# === Form Section ===
 with st.form("skills_form"):
-    st.session_state.first_name = st.text_input("First Name", value=st.session_state.first_name, placeholder="Enter your first name")
-    st.session_state.last_name = st.text_input("Last Name", value=st.session_state.last_name, placeholder="Enter your last name")
+    # === Basic Info ===
+    first_name = st.text_input("First Name", placeholder="Enter your first name")
+    last_name = st.text_input("Last Name", placeholder="Enter your last name")
 
-    st.session_state.prog_text = st.text_area("Describe your experience with programming.", value=st.session_state.prog_text, placeholder="Ex: I mostly use Python and SQL, and I work with Git and OOP concepts.")
-    st.session_state.data_text = st.text_area("Explain how you typically analyze a dataset.", value=st.session_state.data_text, placeholder="Ex: I clean the data, perform EDA, visualize distributions, and calculate statistics.")
-    st.session_state.ml_text = st.text_area("Tell us about a project where you applied ML techniques.", value=st.session_state.ml_text, placeholder="Ex: I built a regression model using scikit-learn and evaluated it with cross-validation.")
-    st.session_state.ml_problem_text = st.text_area("How would you approach designing a churn prediction model?", value=st.session_state.ml_problem_text, placeholder="Ex: I would perform feature engineering, select a model, train, and evaluate it.")
-    st.session_state.nlp_text = st.text_area("Have you ever worked with text data (NLP)?", value=st.session_state.nlp_text, placeholder="Ex: I tokenized text, used embeddings, transformers, sentiment analysis, and NER.")
-    st.session_state.pipeline_text = st.text_area("Explain a time when you built a data pipeline.", value=st.session_state.pipeline_text, placeholder="Ex: I implemented an ETL pipeline using Airflow for batch processing.")
-    st.session_state.sharing_text = st.text_area("How do you share your analysis results?", value=st.session_state.sharing_text, placeholder="Ex: I create dashboards, visualizations, and prepare presentations to explain insights.")
+    # === Experience Questions ===
+    prog_text = st.text_area(
+        "Describe your experience with programming. What languages or tools have you used most?",
+        placeholder="Ex: I mostly use Python and SQL, and I work with Git and OOP concepts."
+    )
 
+    data_text = st.text_area(
+        "Explain how you typically analyze a dataset before building a model.",
+        placeholder="Ex: I clean the data, perform EDA, visualize distributions, and calculate statistics."
+    )
+
+    ml_text = st.text_area(
+        "Tell us about a project where you applied machine learning techniques. What did you do and what tools did you use?",
+        placeholder="Ex: I built a regression model using scikit-learn and evaluated it with cross-validation."
+    )
+
+    ml_problem_text = st.text_area(
+        "How would you approach designing a machine learning model for predicting customer churn?",
+        placeholder="Ex: I would perform feature engineering, select a model, train, and evaluate it."
+    )
+
+    nlp_text = st.text_area(
+        "Have you ever worked with text data (NLP)? What techniques or libraries did you use?",
+        placeholder="Ex: I tokenized text, used embeddings, transformers, sentiment analysis, and NER."
+    )
+
+    pipeline_text = st.text_area(
+        "Explain a time when you built or maintained a data pipeline. What tools or frameworks were involved?",
+        placeholder="Ex: I implemented an ETL pipeline using Airflow for batch processing."
+    )
+
+    sharing_text = st.text_area(
+        "How do you usually share the results of your data analysis with others?",
+        placeholder="Ex: I create dashboards, visualizations, and prepare presentations to explain insights."
+    )
+
+    # === Sliders ===
     col1, col2 = st.columns(2)
     with col1:
-        st.session_state.git_level = st.slider("Git & Collaboration", 1, 5, st.session_state.git_level)
+        git_level = st.slider(
+            "Git & Collaboration",
+            min_value=1, max_value=5, value=3,
+            help="1 = Beginner / Weak, 5 = Expert / Strong"
+        )
     with col2:
-        st.session_state.presentation_level = st.slider("Presentation Skills", 1, 5, st.session_state.presentation_level)
+        presentation_level = st.slider(
+            "Presentation Skills",
+            min_value=1, max_value=5, value=3,
+            help="1 = Beginner / Weak, 5 = Expert / Strong"
+        )
 
-    st.session_state.reflection_text = st.text_area("In your opinion, what makes someone strong in Data Science?", value=st.session_state.reflection_text, placeholder="Ex: Strong problem-solving, communication skills, and mastery of tools.")
+    # === Reflection ===
+    reflection_text = st.text_area(
+        "In your opinion, what makes someone a strong Data Scientist / Engineer?",
+        placeholder="Ex: Strong problem-solving, communication skills, and mastery of tools."
+    )
 
+    # === Submit Button ===
     submitted = st.form_submit_button("Submit")
 
     if submitted:
         # Vérifier les champs obligatoires
         required_fields = {
-            "First Name": st.session_state.first_name,
-            "Last Name": st.session_state.last_name,
-            "Programming": st.session_state.prog_text,
-            "Data Analysis": st.session_state.data_text,
-            "ML Projects": st.session_state.ml_text,
-            "ML Problem": st.session_state.ml_problem_text,
-            "NLP": st.session_state.nlp_text,
-            "Data Pipeline": st.session_state.pipeline_text,
-            "Sharing Results": st.session_state.sharing_text,
-            "Reflection": st.session_state.reflection_text
+            "First Name": first_name,
+            "Last Name": last_name,
+            "Programming": prog_text,
+            "Data Analysis": data_text,
+            "ML Projects": ml_text,
+            "ML Problem": ml_problem_text,
+            "NLP": nlp_text,
+            "Data Pipeline": pipeline_text,
+            "Sharing Results": sharing_text,
+            "Reflection": reflection_text
         }
-        empty_fields = [name for name, value in required_fields.items() if not value.strip()]
+
+        empty_fields = [name for name, value in required_fields.items() if not value or value.strip() == ""]
 
         if empty_fields:
-            st.warning(f"⚠️ Please fill in all required fields: {', '.join(empty_fields)}")
+            st.warning(f"⚠️ Please fill in all the required fields before submitting: {', '.join(empty_fields)}")
         else:
             responses = {
                 "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "First_Name": st.session_state.first_name,
-                "Last_Name": st.session_state.last_name,
-                "Programming": st.session_state.prog_text,
-                "Data_Analysis": st.session_state.data_text,
-                "ML_Projects": st.session_state.ml_text,
-                "ML_Problem": st.session_state.ml_problem_text,
-                "NLP": st.session_state.nlp_text,
-                "Data_Pipeline": st.session_state.pipeline_text,
-                "Sharing_Results": st.session_state.sharing_text,
-                "Git_Level": st.session_state.git_level,
-                "Presentation_Level": st.session_state.presentation_level,
-                "Reflection": st.session_state.reflection_text
+                "First_Name": first_name,
+                "Last_Name": last_name,
+                "Programming": prog_text,
+                "Data_Analysis": data_text,
+                "ML_Projects": ml_text,
+                "ML_Problem": ml_problem_text,
+                "NLP": nlp_text,
+                "Data_Pipeline": pipeline_text,
+                "Sharing_Results": sharing_text,
+                "Git_Level": git_level,
+                "Presentation_Level": presentation_level,
+                "Reflection": reflection_text
             }
+
+            # === Save to CSV ===
             df = pd.DataFrame([responses])
             try:
                 existing_df = pd.read_csv("responses.csv")
                 df = pd.concat([existing_df, df], ignore_index=True)
             except FileNotFoundError:
                 pass
+
             df.to_csv("responses.csv", index=False)
             st.success("✅ Your responses have been successfully saved!")
             st.balloons()
-
-            # --- Reset all form fields ---
-            for field in fields:
-                if "level" in field:
-                    st.session_state[field] = 3
-                else:
-                    st.session_state[field] = ""
-
-# --- Display previous responses ---
-st.markdown("---")
-st.subheader("📊 Previous Responses")
-try:
-    all_responses = pd.read_csv("responses.csv")
-    st.dataframe(all_responses.sort_values("Timestamp", ascending=False))
-except FileNotFoundError:
-    st.info("No responses have been recorded yet.")
