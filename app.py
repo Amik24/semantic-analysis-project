@@ -1,4 +1,4 @@
- import streamlit as st
+import streamlit as st
 import pandas as pd
 from datetime import datetime
 import requests
@@ -122,7 +122,14 @@ def append_to_github_csv(new_response):
         st.error(f"❌ Exception occurred: {str(e)}")
         return False
 
-# === Header (no logo) ===
+
+# === Header with centered logo ===
+st.markdown("""
+<div style="text-align:center; margin-bottom: 20px;">
+    <img src="https://raw.githubusercontent.com/thay-thay/semantic-analysis-project/main/data/ECE_LOGO_2021_web.png" width="220">
+</div>
+""", unsafe_allow_html=True)
+
 st.markdown("""
 <div>
     <div class="header-title">Project – Semantic Analysis</div>
@@ -195,56 +202,4 @@ with st.form("skills_form"):
     )
 
     # === Submit ===
-    submitted = st.form_submit_button("Submit")
-
-    if submitted:
-        # Vérifier les champs obligatoires
-        required_fields = {
-            "First Name": first_name,
-            "Last Name": last_name,
-            "Programming": prog_text,
-            "Data Analysis": data_text,
-            "ML Projects": ml_text,
-            "ML Problem": ml_problem_text,
-            "NLP": nlp_text,
-            "Data Pipeline": pipeline_text,
-            "Sharing Results": sharing_text,
-            "Reflection": reflection_text
-        }
-
-        empty_fields = [name for name, value in required_fields.items() if not value or value.strip() == ""]
-
-        if empty_fields:
-            st.warning(f"⚠️ Please fill in all the required fields before submitting: {', '.join(empty_fields)}")
-        else:
-            # Créer le dictionnaire avec les réponses
-            responses = {
-                "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "First_Name": first_name,
-                "Last_Name": last_name,
-                "Programming": prog_text,
-                "Data_Analysis": data_text,
-                "ML_Projects": ml_text,
-                "ML_Problem": ml_problem_text,
-                "NLP": nlp_text,
-                "Data_Pipeline": pipeline_text,
-                "Sharing_Results": sharing_text,
-                "Git_Level": git_level,
-                "Presentation_Level": presentation_level,
-                "Reflection": reflection_text
-            }
-
-            # Sauvegarder sur GitHub
-            with st.spinner("Saving your responses to GitHub..."):
-                success = append_to_github_csv(responses)
-            
-            if success:
-                st.success(f"✅ Thank you {first_name}! Your responses have been submitted successfully to GitHub.")
-                st.balloons()
-
-                # === Display the responses ===
-                st.markdown("### 📋 Your Submitted Responses:")
-                df = pd.DataFrame([responses])
-                st.dataframe(df)
-            else:
-                st.error("❌ Failed to save responses to GitHub. Please try again or contact support.")
+    subm
