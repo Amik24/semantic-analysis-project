@@ -1,10 +1,8 @@
 # Semantic Engine workflow
 # ------------------------
-# I configured this workflow so that every time the Streamlit app pushes
-# data/user_responses.csv, the engine runs automatically on GitHub Actions.
-# It processes the answers, generates the semantic scores, and commits
-# the resulting CSVs + JSON back into the repository so Streamlit can
-# fetch the results live.
+# I set this up so that whenever the app pushes data/user_responses.csv,
+# the engine runs on GitHub Actions, generates results, and commits them
+# back into the repo so the front/back can fetch them via a raw URL.
 
 name: Semantic Engine
 
@@ -12,14 +10,18 @@ on:
   push:
     paths:
       - 'semantic_engine.py'
-      - 'run_engine.py'
       - 'requirements.txt'
-      - 'data/user_responses.csv'
+      - 'data/user_responses.csv'     # trigger when Streamlit updates this
+      - 'data/front_export.csv'       # (optional) trigger if I ever use this path
       - '.github/workflows/semantic-engine.yml'
   workflow_dispatch:
 
 permissions:
-  contents: write   # I need this so the workflow can push the results back
+  contents: write   # allow this job to push results back to the repo
+
+concurrency:
+  group: semantic-engine
+  cancel-in-progress: true
 
 jobs:
   run-engine:
@@ -28,11 +30,14 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0            # needed for pushing a commit
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          cache: 'pip'              # speed up installs
 
       - name: Install dependencies
         run: |
@@ -43,18 +48,19 @@ jobs:
         run: |
           python semantic_engine.py
 
-      # After the run, I commit the output files back into the repo
+      # Commit the outputs so they are hosted in the repo (and fetchable via raw URL)
       - name: Commit and push results
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add outputs/competency_scores.csv outputs/block_scores.csv outputs/job_scores.csv outputs/results/summary.json || true
+          # Use -f in case outputs/ is ignored in .gitignore
+          git add -f outputs/competency_scores.csv outputs/block_scores.csv outputs/job_scores.csv outputs/results/summary.json || true
           git commit -m "Update semantic engine results" || echo "No changes to commit"
           git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # I also keep the artifact upload in case I want to download the files manually from Actions
+      # Keep an artifact as well (handy to download from Actions if needed)
       - name: Upload outputs (artifact)
         uses: actions/upload-artifact@v4
         with:
@@ -63,4 +69,4 @@ jobs:
             outputs/competency_scores.csv
             outputs/block_scores.csv
             outputs/job_scores.csv
-            outputs/results/summary.json
+            outputs/results/summa
