@@ -1,3 +1,11 @@
+# Semantic Engine workflow
+# ------------------------
+# I configured this workflow so that every time the Streamlit app pushes
+# data/user_responses.csv, the engine runs automatically on GitHub Actions.
+# It processes the answers, generates the semantic scores, and commits
+# the resulting CSVs + JSON back into the repository so Streamlit can
+# fetch the results live.
+
 name: Semantic Engine
 
 on:
@@ -10,9 +18,13 @@ on:
       - '.github/workflows/semantic-engine.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write   # I need this so the workflow can push the results back
+
 jobs:
   run-engine:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
@@ -31,7 +43,19 @@ jobs:
         run: |
           python semantic_engine.py
 
-      - name: Upload outputs (artifacts)
+      # After the run, I commit the output files back into the repo
+      - name: Commit and push results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add outputs/competency_scores.csv outputs/block_scores.csv outputs/job_scores.csv outputs/results/summary.json || true
+          git commit -m "Update semantic engine results" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # I also keep the artifact upload in case I want to download the files manually from Actions
+      - name: Upload outputs (artifact)
         uses: actions/upload-artifact@v4
         with:
           name: semantic-results
