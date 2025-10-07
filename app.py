@@ -66,8 +66,8 @@ st.markdown("---")
 
 # === GitHub Configuration ===
 GITHUB_TOKEN = st.secrets.get("GITHUB_TOKEN", "")
-GITHUB_REPO = "d4ikram/semantic-analysis-project"
-FILE_PATH = "data/user_responses.csv"
+GITHUB_REPO = "Amik24/semantic-analysis-project"  # ✅ Ton dépôt GitHub
+FILE_PATH = "data/user_responses.csv"             # ✅ Chemin du fichier CSV
 
 def append_to_github_csv(new_response):
     if not GITHUB_TOKEN:
@@ -93,6 +93,7 @@ def append_to_github_csv(new_response):
             existing_df = pd.read_csv(StringIO(content))
             new_df = pd.concat([existing_df, pd.DataFrame([new_response])], ignore_index=True)
         elif response.status_code == 404:
+            # Si le fichier n'existe pas encore, on le crée
             new_df = pd.DataFrame([new_response])
             sha = None
         else:
@@ -184,7 +185,6 @@ with st.form("skills_form"):
     submitted = st.form_submit_button("Submit")
 
     if submitted:
-        # ✅ Only first and last name are mandatory
         if not first_name.strip() or not last_name.strip():
             st.warning("⚠️ Please fill in your First Name and Last Name before submitting.")
         else:
