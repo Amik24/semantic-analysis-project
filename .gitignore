@@ -1,6 +1,14 @@
-outputs/
+# keep caches ignored
 __pycache__/
 *.pyc
 *.ipynb_checkpoints
 .env
-.streamlit/
+
+# ignore everything under outputs by default…
+outputs/*
+# …but keep these results in Git:
+!outputs/results/
+!outputs/results/summary.json
+!outputs/competency_scores.csv
+!outputs/block_scores.csv
+!outputs/job_scores.csv
