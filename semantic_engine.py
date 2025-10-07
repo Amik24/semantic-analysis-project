@@ -59,21 +59,50 @@ RES_DIR = OUT_DIR / "results"
 # -------------------------------------------------------------------------
 # Extra support for front-end CSV exports with multiple columns
 # -------------------------------------------------------------------------
-FRONT_TEXT_COLS = [
+# -------------------------------------------------------------------------
+# Accept Streamlit's multi-column user_responses.csv
+# -------------------------------------------------------------------------
+# Canonical text fields we want to concatenate into one "response" string.
+CANONICAL_TEXT_FIELDS = [
     "Programming", "Data_Analysis", "ML_Projects", "ML_Problem",
-    "NLP", "Data_Pipeline", "Sharing_Results", "Reflection"
+    "NLP", "Data_Pipeline", "Sharing_Results", "Reflection",
 ]
 
-def _row_to_response(row) -> str:
-    """Concatenate the textual fields from the front form into one response line."""
+# Some teams rename headers (spaces/underscores/case). Map canonical -> variants.
+CANONICAL_VARIANTS = {
+    "Programming":       ["Programming", "programming"],
+    "Data_Analysis":     ["Data_Analysis", "Data Analysis", "data_analysis"],
+    "ML_Projects":       ["ML_Projects", "ML Projects", "ml_projects"],
+    "ML_Problem":        ["ML_Problem", "ML Problem", "ml_problem"],
+    "NLP":               ["NLP", "nlp"],
+    "Data_Pipeline":     ["Data_Pipeline", "Data Pipeline", "data_pipeline"],
+    "Sharing_Results":   ["Sharing_Results", "Sharing Results", "sharing_results"],
+    "Reflection":        ["Reflection", "reflection"],
+}
+
+# Non-text columns we intentionally ignore when concatenating:
+IGNORE_FIELDS = {"Timestamp", "First_Name", "Last_Name", "Git_Level", "Presentation_Level"}
+
+def _resolve_actual_cols(df: pd.DataFrame) -> list[str]:
+    """Find actual column names present in df for each canonical text field."""
+    cols = []
+    existing = set(df.columns)
+    for canon, variants in CANONICAL_VARIANTS.items():
+        found = next((v for v in variants if v in existing), None)
+        if found:
+            cols.append(found)
+    return cols
+
+def _row_to_response(row: pd.Series, selected_cols: list[str]) -> str:
+    """Concatenate selected text columns from a row into one clean string."""
     parts = []
-    for col in FRONT_TEXT_COLS:
-        if col in row and pd.notna(row[col]):
-            txt = str(row[col]).strip()
+    for col in selected_cols:
+        val = row.get(col, None)
+        if pd.notna(val):
+            txt = str(val).strip()
             if txt and txt.lower() != "none":
                 parts.append(txt)
     return " ".join(parts).strip()
-
 
 # ------------------------------ Helper functions ------------------------------
 
@@ -86,53 +115,56 @@ def _ensure_folders() -> None:
 
 def load_inputs() -> Tuple[pd.DataFrame, pd.DataFrame, List[str]]:
     """
-    Load inputs. Prefer classic user_responses.csv if present; otherwise accept
-    a front-end export named data/front_export.csv with multiple columns.
+    Load inputs. If data/user_responses.csv has a 'response' column, use it.
+    Otherwise, treat it as a multi-column Streamlit export and build the text.
     """
-    comp_path = DATA_DIR / "competencies.csv"
-    jobs_path = DATA_DIR / "job_skills.csv"
-    user_path = DATA_DIR / "user_responses.csv"   # classic single-column input
-    front_path = DATA_DIR / "front_export.csv"    # put your front CSV here
+    comp_path  = DATA_DIR / "competencies.csv"
+    jobs_path  = DATA_DIR / "job_skills.csv"
+    user_path  = DATA_DIR / "user_responses.csv"   # Streamlit writes this
 
     if not comp_path.exists():
         raise FileNotFoundError("Missing data/competencies.csv")
     if not jobs_path.exists():
         raise FileNotFoundError("Missing data/job_skills.csv")
+    if not user_path.exists():
+        raise FileNotFoundError("Missing data/user_responses.csv")
 
-    # Load reference data
+    # Reference data
     competencies = pd.read_csv(comp_path)
-    jobs_long = pd.read_csv(jobs_path)
+    jobs_long    = pd.read_csv(jobs_path)
     competencies.columns = competencies.columns.str.strip()
-    jobs_long.columns = jobs_long.columns.str.strip()
+    jobs_long.columns    = jobs_long.columns.str.strip()
 
-    # 1) Classic path: data/user_responses.csv with a 'response' column
-    if user_path.exists():
-        user_df = pd.read_csv(user_path)
-        user_df.columns = user_df.columns.str.strip()
-        if "response" not in user_df.columns:
-            raise ValueError("data/user_responses.csv must contain a 'response' column.")
+    # User responses (single- or multi-column)
+    df = pd.read_csv(user_path)
+    df.columns = df.columns.str.strip()
+
+    user_inputs: List[str] = []
+    if "response" in df.columns:
+        # Classic path: already a single text column
         user_inputs = (
-            user_df["response"]
-            .dropna().astype(str).map(str.strip)
-            .replace("", np.nan).dropna().tolist()
+            df["response"].dropna().astype(str).map(str.strip)
+              .replace("", np.nan).dropna().tolist()
         )
-
-    # 2) Front-end export path: data/front_export.csv (multi-column)
-    elif front_path.exists():
-        df = pd.read_csv(front_path)
-        df.columns = df.columns.str.strip()
-        user_inputs = df.apply(_row_to_response, axis=1).tolist()
+    else:
+        # Streamlit export path: build text from multiple columns
+        # 1) pick actual columns present for the canonical text fields
+        actual_cols = _resolve_actual_cols(df)
+        # 2) drop known non-text fields if they happen to be in the list
+        actual_cols = [c for c in actual_cols if c not in IGNORE_FIELDS]
+        if not actual_cols:
+            raise ValueError(
+                "user_responses.csv has no recognized text columns. "
+                "Expected one or more of: "
+                + ", ".join(CANONICAL_TEXT_FIELDS)
+            )
+        # 3) build one response per row
+        user_inputs = df.apply(lambda r: _row_to_response(r, actual_cols), axis=1).tolist()
         user_inputs = [x for x in user_inputs if x]  # keep non-empty
 
-        if not user_inputs:
-            raise ValueError(
-                "data/front_export.csv loaded but produced no non-empty responses. "
-                "Check FRONT_TEXT_COLS or your CSV content."
-            )
-    else:
-        raise FileNotFoundError(
-            "Provide either data/user_responses.csv (with 'response' column) "
-            "or data/front_export.csv (front export with multiple columns)."
+    if not user_inputs:
+        raise ValueError(
+            "No usable user responses found in data/user_responses.csv."
         )
 
     # Group job -> list of required competencies
@@ -212,7 +244,7 @@ def main() -> None:
     print("Loading data...")
     competencies, jobs, user_inputs = load_inputs()
     if not user_inputs:
-        raise ValueError("No user responses found (user_responses.csv or front_export.csv).")
+        raise ValueError("No user responses found in data/user_responses.csv.")
 
     # Prepare reference data
     cid2block = dict(zip(competencies["CompetencyID"], competencies["BlockName"]))
