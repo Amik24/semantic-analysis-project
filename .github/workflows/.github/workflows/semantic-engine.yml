@@ -58,7 +58,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Use -f in case outputs/ is ignored in .gitignore
+          
+          git status
           git add -f outputs/competency_scores.csv outputs/block_scores.csv outputs/job_scores.csv outputs/results/summary.json || true
           git commit -m "Update semantic engine results" || echo "No changes to commit"
           git push
