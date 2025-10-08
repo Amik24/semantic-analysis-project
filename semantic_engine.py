@@ -120,10 +120,22 @@ def _row_to_response(row: pd.Series, selected_cols: list[str]) -> str:
 # ------------------------------ Helper functions ------------------------------
 
 def _ensure_folders() -> None:
-    """Create output folders if they do not exist."""
+    """Create output folders; tolerate a stray file at outputs/results."""
+    # If outputs/ exists but is a *file*, remove it
+    if OUT_DIR.exists() and not OUT_DIR.is_dir():
+        OUT_DIR.unlink()
     OUT_DIR.mkdir(exist_ok=True)
-    FIG_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Same for outputs/results
+    if RES_DIR.exists() and not RES_DIR.is_dir():
+        # someone accidentally created a file named 'outputs/results'
+        RES_DIR.unlink()
     RES_DIR.mkdir(parents=True, exist_ok=True)
+
+    # figures dir is optional; same safety
+    if FIG_DIR.exists() and not FIG_DIR.is_dir():
+        FIG_DIR.unlink()
+    FIG_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def load_inputs() -> Tuple[pd.DataFrame, pd.DataFrame, List[str]]:
