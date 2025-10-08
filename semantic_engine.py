@@ -34,6 +34,15 @@ import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer, util
 
+# Chemin du dossier où se trouve le script
+BASE_DIR = Path(__file__).parent
+
+# Dossiers de données et outputs
+DATA_DIR = BASE_DIR / "data"
+OUT_DIR = BASE_DIR / "outputs"
+RES_DIR = OUT_DIR / "results"
+FIG_DIR = OUT_DIR / "figures"
+
 
 # --------------------------- Configuration (edit here) ------------------------
 
