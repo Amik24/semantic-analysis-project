@@ -69,4 +69,4 @@ jobs:
             outputs/competency_scores.csv
             outputs/block_scores.csv
             outputs/job_scores.csv
-            outputs/results/summa
+            outputs/results/summary.json
