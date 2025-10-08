@@ -6,7 +6,6 @@ on:
       - 'semantic_engine.py'
       - 'requirements.txt'
       - 'data/user_responses.csv'
-      # - 'data/front_export.csv'     
       - '.github/workflows/semantic-engine.yml'
   workflow_dispatch:
 
@@ -20,7 +19,6 @@ concurrency:
 jobs:
   run-engine:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
@@ -38,57 +36,38 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # make sure outputs/ and outputs/results/ are directories, not stray files
-      - name: Ensure outputs dirs exist (and not files)
+      - name: Pre-clean and ensure dirs
         run: |
           if [ -f outputs ]; then rm -f outputs; fi
           if [ -f outputs/results ]; then rm -f outputs/results; fi
           mkdir -p outputs/results
 
       - name: Run semantic engine
-        run: |
-          python semantic_engine.py
+        run: python semantic_engine.py
 
-      # strict verification + detailed logs + force add (bypass .gitignore)
-      - name: Verify outputs and push results
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify outputs
         run: |
           set -e
-          echo "== List outputs (recursive) =="
           ls -laR outputs || true
-
-          echo "== Sanity checks (fail if missing) =="
           test -f outputs/competency_scores.csv
           test -f outputs/block_scores.csv
           test -f outputs/job_scores.csv
           test -f outputs/results/summary.json
 
-          echo "== Git status BEFORE add =="
-          git status --porcelain
-
-          echo "== Force-add results (bypass .gitignore) =="
-          git add -f \
-            outputs/competency_scores.csv \
-            outputs/block_scores.csv \
-            outputs/job_scores.csv \
-            outputs/results/summary.json
-
-          echo "== Staged files =="
-          git diff --staged --name-only
-
+      #  Publish to a separate 'results' branch (always succeeds, main stays clean)
+      - name: Publish results to 'results' branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          git fetch origin
+          git checkout -B results
+          mkdir -p outputs/results
+          git add -f outputs/competency_scores.csv \
+                     outputs/block_scores.csv \
+                     outputs/job_scores.csv \
+                     outputs/results/summary.json
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "Update semantic engine results" || echo "No changes to commit"
-          git push
-
-      # optional artifact for manual download from Actions UI
-      - name: Upload outputs (artifact)
-        uses: actions/upload-artifact@v4
-        with:
-          name: semantic-results
-          path: |
-            outputs/competency_scores.csv
-            outputs/block_scores.csv
-            outputs/job_scores.csv
-            outputs/results/summary.json
+          git commit -m "Update results" || echo "No changes to commit"
+          git push -f origin results
