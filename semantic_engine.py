@@ -34,11 +34,13 @@ import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer, util
 
-BASE_DIR = Path(__file__).parent  # <-- racine du repo
+BASE_DIR = Path.cwd()          # force le repo root
 DATA_DIR = BASE_DIR / "data"
 OUT_DIR  = BASE_DIR / "outputs"
 RES_DIR  = OUT_DIR / "results"
-FIG_DIR  = OUT_DIR / "figures"  # pr la viz
+FIG_DIR  = OUT_DIR / "figures"
+
+
 
 # Crée les dossiers si manquants
 OUT_DIR.mkdir(parents=True, exist_ok=True)
