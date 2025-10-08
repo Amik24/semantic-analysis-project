@@ -43,6 +43,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          
+      - name: Ensure outputs dirs exist (and not files)
+        run: |
+          if [ -f outputs ]; then rm -f outputs; fi
+          if [ -f outputs/results ]; then rm -f outputs/results; fi
+          mkdir -p outputs/results
 
       - name: Run semantic engine
         run: |
