@@ -41,7 +41,7 @@ RES_DIR  = OUT_DIR / "results"
 FIG_DIR  = OUT_DIR / "figures"  # pr la viz
 
 # Crée les dossiers si manquants
-OUT_DIR.mkdir(exist_ok=True)
+OUT_DIR.mkdir(parents=True, exist_ok=True)
 RES_DIR.mkdir(parents=True, exist_ok=True)
 FIG_DIR.mkdir(parents=True, exist_ok=True)
 
