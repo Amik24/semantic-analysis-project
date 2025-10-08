@@ -5,16 +5,24 @@ import requests
 import base64
 import json
 
-# === Navigation ===
-st.sidebar.title("Navigation")
-page = st.sidebar.radio("Aller à:", ["Formulaire", "Résultats"])
-
-if page == "Résultats":
+# importe ta page de visu si le module existe
+try:
     from viz_page import show_visualisations
-    show_visualisations()
-    st.stop()
+    HAS_VIZ = True
+except Exception:
+    HAS_VIZ = False
 
-# === Ton code existant continue ici ===
+# --- Navigation ---
+pages = ["Accueil"]
+if HAS_VIZ:
+    pages.append("Visualisations")
+
+choice = st.sidebar.radio("Navigation", pages, index=0)
+
+# --- Si on choisit Visualisations : on affiche et on S'ARRÊTE ---
+if HAS_VIZ and choice == "Visualisations":
+    show_visualisations()
+    st.stop()  # ⬅️ empêche tout le code en dessous (le formulaire) de s'exécuter
 
 # === Page configuration ===
 st.set_page_config(
@@ -226,4 +234,5 @@ with st.form("skills_form"):
                 st.dataframe(df)
             else:
                 st.error("❌ Failed to save responses to GitHub. Please try again or contact support.")
+
 
