@@ -294,6 +294,9 @@ def main() -> None:
     # Use Top-K ranking by default
     jobs_ranked = jobs_topk.sort_values("JobScore", ascending=False).reset_index(drop=True)
 
+    print("OUT_DIR:", OUT_DIR.resolve())
+    print("RES_DIR:", RES_DIR.resolve())
+
     # Save CSVs
     comp_df.to_csv(OUT_DIR / "competency_scores.csv", index=False)
     block_scores.to_csv(OUT_DIR / "block_scores.csv")
