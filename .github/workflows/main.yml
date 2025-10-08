@@ -19,6 +19,7 @@ concurrency:
 jobs:
   run-engine:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
@@ -54,7 +55,7 @@ jobs:
           test -f outputs/job_scores.csv
           test -f outputs/results/summary.json
 
-      #  Publish to a separate 'results' branch (always succeeds, main stays clean)
+      # ⬇⬇ THIS is the missing step ⬇⬇
       - name: Publish results to 'results' branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -71,3 +72,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "Update results" || echo "No changes to commit"
           git push -f origin results
+
+      - name: Upload outputs (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-results
+          path: outputs/
