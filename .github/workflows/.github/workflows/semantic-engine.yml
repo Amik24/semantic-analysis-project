@@ -48,6 +48,9 @@ jobs:
         run: |
           python semantic_engine.py
 
+      - name: List outputs for debug
+        run: ls -R outputs
+
       # Commit the outputs so they are hosted in the repo (and fetchable via raw URL)
       - name: Commit and push results
         env:
