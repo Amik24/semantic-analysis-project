@@ -5,6 +5,17 @@ import requests
 import base64
 import json
 
+# === Navigation ===
+st.sidebar.title("Navigation")
+page = st.sidebar.radio("Aller à:", ["Formulaire", "Résultats"])
+
+if page == "Résultats":
+    from viz_page import show_visualisations
+    show_visualisations()
+    st.stop()
+
+# === Ton code existant continue ici ===
+
 # === Page configuration ===
 st.set_page_config(
     page_title="Semantic Analysis Project",
@@ -215,3 +226,4 @@ with st.form("skills_form"):
                 st.dataframe(df)
             else:
                 st.error("❌ Failed to save responses to GitHub. Please try again or contact support.")
+
