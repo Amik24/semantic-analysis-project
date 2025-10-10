@@ -1,0 +1,34 @@
+{
+  "mode": "avg",
+  "top_k": 3,
+  "final_coverage": 0.32625457644462585,
+  "top_job": "Data Engineer",
+  "top_job_score": 0.46365801493326825,
+  "top_competencies": [
+    {
+      "CompetencyID": "C33",
+      "CompetencyText": "Data modeling",
+      "Score": 0.4958489239215851
+    },
+    {
+      "CompetencyID": "C06",
+      "CompetencyText": "Exploratory data analysis",
+      "Score": 0.46079128980636597
+    },
+    {
+      "CompetencyID": "C02",
+      "CompetencyText": "Data visualization",
+      "Score": 0.45932623744010925
+    },
+    {
+      "CompetencyID": "C04",
+      "CompetencyText": "SQL queries",
+      "Score": 0.4512780010700226
+    },
+    {
+      "CompetencyID": "C32",
+      "CompetencyText": "Database management",
+      "Score": 0.443847119808197
+    }
+  ]
+}

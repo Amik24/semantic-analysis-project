@@ -1,0 +1,36 @@
+CompetencyID,CompetencyText,BlockName,Score
+C33,Data modeling,Data Engineering,0.49584892
+C06,Exploratory data analysis,Data Analysis,0.4607913
+C02,Data visualization,Data Analysis,0.45932624
+C04,SQL queries,Data Analysis,0.451278
+C32,Database management,Data Engineering,0.44384712
+C03,Python programming,Data Analysis,0.41261256
+C29,Requirements gathering,Project Management,0.39014503
+C05,Dashboards,Data Analysis,0.3799883
+C10,Regression,Machine Learning,0.37853283
+C30,Data pipeline design,Data Engineering,0.37641585
+C07,Statistics,Data Analysis,0.37252748
+C14,Deep learning,Machine Learning,0.36949724
+C13,Neural networks,Machine Learning,0.3625369
+C23,Sentiment analysis,NLP,0.36125803
+C34,Cloud platforms,Data Engineering,0.33824867
+C08,Model evaluation,Machine Learning,0.3381913
+C35,Data governance,Data Engineering,0.3325002
+C01,Data cleaning,Data Analysis,0.33222252
+C11,Cross-validation,Machine Learning,0.3294573
+C09,Classification,Machine Learning,0.325053
+C27,Chatbot development,NLP,0.3241983
+C24,Text classification,NLP,0.31833026
+C31,ETL processes,Data Engineering,0.31207755
+C26,Question answering,NLP,0.31085342
+C16,Tokenization,NLP,0.28291708
+C15,Text preprocessing,NLP,0.28236607
+C25,Machine translation,NLP,0.2610252
+C22,Language models,NLP,0.22471519
+C17,Lemmatization,NLP,0.20611592
+C12,Hyperparameter tuning,Machine Learning,0.18174326
+C21,Semantic similarity,NLP,0.17049426
+C18,Named entity recognition,NLP,0.15450394
+C28,Stakeholder communication,Project Management,0.14598602
+C19,Word embeddings,NLP,0.13743883
+C20,Transformers,NLP,0.13518041
